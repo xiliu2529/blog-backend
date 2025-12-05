@@ -53,4 +53,22 @@ public class UserService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
     }
+
+    public String generateRefreshToken(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+        return jwtUtil.generateRefreshToken(user.getUsername(), user.getId());
+    }
+
+    public String refreshToken(String refreshToken) {
+        if (!jwtUtil.validateRefreshToken(refreshToken)) {
+            throw new RuntimeException("无效的刷新令牌");
+        }
+        
+        String username = jwtUtil.extractUsername(refreshToken);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+        
+        return jwtUtil.generateToken(user.getUsername(), user.getId());
+    }
 }

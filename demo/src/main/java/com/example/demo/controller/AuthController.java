@@ -30,10 +30,24 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody UserLoginDto loginDto) {
         try {
-            String token = userService.login(loginDto);
             User user = userService.findByUsername(loginDto.getUsername());
-            AuthResponseDto response = new AuthResponseDto(token, user.getId(), user.getUsername());
+            String token = userService.login(loginDto);
+            String refreshToken = userService.generateRefreshToken(loginDto.getUsername());
+            AuthResponseDto response = new AuthResponseDto(token, refreshToken, user.getId(), user.getUsername());
             return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+        try {
+            if (refreshToken != null && refreshToken.startsWith("Bearer ")) {
+                refreshToken = refreshToken.substring(7);
+            }
+            String newToken = userService.refreshToken(refreshToken);
+            return ResponseEntity.ok(newToken);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
