@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/articles")
 public class ArticleController {
@@ -16,26 +14,15 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
-    @GetMapping
-    public ResponseEntity<List<Article>> getAllArticles() {
-        return ResponseEntity.ok(articleService.getAll());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getArticleById(@PathVariable Integer id) {
-        Article article = articleService.getById(id);
-        if (article == null)
-            return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(article);
-    }
-
-    // 🚀 创建文章（这里自动带 userId）
+    // 🚀 创建文章（这里自动带 userId） // 🚀 创建文章
     @PostMapping
     public ResponseEntity<Article> createArticle(@RequestBody ArticleRequestDto dto) {
 
-        Integer userId = 1; // ⚠ 暂时写死，等你做登录后自动获取
+        Integer userId = 1; // TODO: 从登录信息中获取
 
-        return ResponseEntity.ok(articleService.create(userId, dto));
+        Article article = articleService.create(userId, dto);
+
+        return ResponseEntity.status(201).body(article);
     }
 
     @PutMapping("/{id}")
@@ -53,4 +40,5 @@ public class ArticleController {
         articleService.delete(id);
         return ResponseEntity.ok().build();
     }
+
 }
